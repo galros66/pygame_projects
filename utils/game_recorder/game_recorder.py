@@ -3,14 +3,15 @@ import os
 import shutil
 import time
 
-_USER_NAME = "gal66"
+from utils.private_parms import USER_NAME_FOLDER
+
 _WAITING_TIME = 0.5
 class GameRecorder:
-    _SAVED_DIR = r"C:\Users\{user_name}\Videos\Captures".format(user_name=_USER_NAME)
+    _SAVED_DIR = r"C:\Users\{user_name}\Videos\Captures".format(user_name=USER_NAME_FOLDER)
     _DIR = r"C:\ws\pygame_projects\utils\game_recorder\game_recordings"
 
-    def __init__(self, game_name):
-        self.game_name = game_name
+    def __init__(self, game_name: str, game_number: int):
+        self.game_name = f"{game_name} {game_number}"
 
     def start(self):
         pyautogui.hotkey('win', 'alt', 'g')

@@ -5,17 +5,16 @@ import  os
 
 from utils.colors import Color
 from utils.media_uploaders.emojis import color_emoji_mapping
+from utils.private_parms import ACCOUNT_USER_NAME, ACCOUNT_PASSWORD
 
 VIDEO_DIR = r"C:\ws\pygame_projects\utils\game_recorder\game_recordings"
-USER_NAME = "grr.sim.games"
-PASSWORD = "GRR663355"
 
 
 class ReelUploader:
-    def __init__(self, game_name: str, game_number: int = -1, text: str = None, players_color: list[tuple] = None):
+    def __init__(self, game_name: str, game_number: int, text: str = None, players_color: list[tuple] = None):
         self.client = Client()
-        self.client.login(USER_NAME, PASSWORD)
-        self.file_prefix = game_name if game_number == -1 else f"{game_name} {game_number}"
+        self.client.login(ACCOUNT_USER_NAME, ACCOUNT_PASSWORD)
+        self.file_prefix = f"{game_name} {game_number}"
         self.game_name = game_name
         self._title = f"🎮 {game_name.title()} 🏁"
         self._hash_tags = " #".join([

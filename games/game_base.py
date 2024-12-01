@@ -48,7 +48,7 @@ class GameBase(ABC):
 
         self._logo_position = self._game_data[self.LOGO_STR][self.POSITION_STR]
         self._running = True
-        self._recorder = GameRecorder(self._name) if recording else None
+        self._recorder = GameRecorder(self._name, self._n) if recording else None
         self._uploader = ReelUploader(self._name, self._n, players_color=self._get_players_color()) if recording and upload else None
 
 
@@ -79,11 +79,11 @@ class GameBase(ABC):
 
         # Quit the game
         if self._recorder: self._recorder.stop()
-        time.sleep(5)
-        pygame.quit()
+        # time.sleep(5)
         if self._uploader:
-            time.sleep(15)
+            time.sleep(30)
             self._uploader.upload()
+        pygame.quit()
 
     def _get_players_color(self) -> list[tuple]:
         pass
