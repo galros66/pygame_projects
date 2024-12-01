@@ -1,0 +1,9 @@
+instagrapi
+numpy
+pygame
+pymunk
+opencv-python
+opencv-contrib-python
+wave
+pyaudio
+pyautogui
