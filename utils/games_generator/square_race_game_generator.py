@@ -1,8 +1,9 @@
 import random
 
+import pygame
+
 from utils.colors import Color
 from utils.games_generator.game_generator_base import GameGeneratorBase
-import pygame
 
 
 class SquareRaceGameGenerator(GameGeneratorBase):
@@ -26,6 +27,7 @@ class SquareRaceGameGenerator(GameGeneratorBase):
     SIZES = {
         BRICKS_ELEMENTS: (15, 15),
     }
+
     def __init__(self, game_name: str = "Square Race"):
         super().__init__(game_name)
         self.boundaries = []
@@ -56,7 +58,7 @@ class SquareRaceGameGenerator(GameGeneratorBase):
         modes = [self.MODE_LOGO, self.MODE_END, self.MODE_START, self.MODE_BORDER]
         mode = modes.pop()
         # Buttons
-        button = pygame.Rect(self.width//2 -75 , self.height + 20, 150, 50)
+        button = pygame.Rect(self.width // 2 - 75, self.height + 20, 150, 50)
 
         # Main loop
         running = True
@@ -118,8 +120,10 @@ class SquareRaceGameGenerator(GameGeneratorBase):
                             for row in tiles:
                                 for tile in row:
                                     if tile.collidepoint(mouse_pos):
-                                        if tile in borders: borders.remove(tile)
-                                        else: borders.append(tile)
+                                        if tile in borders:
+                                            borders.remove(tile)
+                                        else:
+                                            borders.append(tile)
 
                         elif mode == self.MODE_START:
                             self.start_position = mouse_pos
@@ -130,12 +134,12 @@ class SquareRaceGameGenerator(GameGeneratorBase):
                             else:
                                 if self.end_victory_line: self.start_victory_line = self.end_victory_line
                                 a0, b0 = self.start_victory_line
-                                self.end_victory_line = (a0 , mouse_pos[1]) if abs(a0 - mouse_pos[0]) < abs(b0 - mouse_pos[1]) \
+                                self.end_victory_line = (a0, mouse_pos[1]) if abs(a0 - mouse_pos[0]) < abs(
+                                    b0 - mouse_pos[1]) \
                                     else (mouse_pos[0], b0)
 
                         elif mode == self.MODE_LOGO:
                             self.logo_position = mouse_pos
-
 
             # Update display
             pygame.display.flip()
@@ -170,12 +174,12 @@ class SquareRaceGameGenerator(GameGeneratorBase):
                     border = tiles[i][j]
                     if j + 1 < len(tiles[i]) and tiles[i][j + 1] not in borders:
                         borders_lines.append([(border.x + border.size[0], border.y),
-                         (border.x + border.size[0], border.y + border.size[1])])
+                                              (border.x + border.size[0], border.y + border.size[1])])
                     if j > 0 and tiles[i][j - 1] not in borders:
                         borders_lines.append([(border.x, border.y), (border.x, border.y + border.size[1])])
                     if i + 1 < len(tiles) and tiles[i + 1][j] not in borders:
                         borders_lines.append([(border.x, border.y + border.size[1]),
-                         (border.x + border.size[0], border.y + border.size[1])])
+                                              (border.x + border.size[0], border.y + border.size[1])])
                     if i > 0 and tiles[i - 1][j] not in borders:
                         borders_lines.append([(border.x, border.y), (border.x + border.size[0], border.y)])
 
@@ -188,7 +192,7 @@ class SquareRaceGameGenerator(GameGeneratorBase):
             color = random.choice(Color.get_all()).value
         self.data[self.BOUNDARIES_ELEMENTS] = [
             {
-                "position": (border.x + border.size[0]/2,  border.y + border.size[1]/2),
+                "position": (border.x + border.size[0] / 2, border.y + border.size[1] / 2),
                 "size": border.size,
                 "group": self.GROUPS[self.BOUNDARIES_ELEMENTS],
                 "color": color
@@ -199,7 +203,7 @@ class SquareRaceGameGenerator(GameGeneratorBase):
                 "a": a,
                 "b": b,
                 "group": self.GROUPS[self.BOUNDARIES_LINES_ELEMENTS],
-            } for [a , b] in borders_lines
+            } for [a, b] in borders_lines
         ]
 
     @classmethod
@@ -233,13 +237,21 @@ class SquareRaceGameGenerator(GameGeneratorBase):
             } for i in range(n_bricks)
         ]
 
-
     def _add_victory_line_data(self):
-        self.data[self.VICTORY_LINE_ELEMENTS] = {
-            "a": self.start_victory_line,
-            "b": self.end_victory_line,
+        dx, dy = abs(self.start_victory_line[0] - self.end_victory_line[0]), abs(
+            self.start_victory_line[1] - self.end_victory_line[1])
+        a, b = min(self.start_victory_line[0], self.end_victory_line[0]), min(self.start_victory_line[1],
+                                                                              self.end_victory_line[1])
+        x_pos, y_pos = ([a - 3, a + 3], [b + y for y in range(0, dy, 6)]) if dx == 0 else (
+            [a + x for x in range(0, dx, 6)], [b - 3, b + 3])
+
+        self.data[self.VICTORY_LINE_ELEMENTS] = [{
+            "position": (x, y),
+            "size": (6, 6),
+            "color": Color.BLACK.value if (x_pos.index(x) + y_pos.index(y)) % 2 == 0 else Color.WHITE.value,
             "group": self.GROUPS[self.VICTORY_LINE_ELEMENTS]
-        }
+
+        } for x in x_pos for y in y_pos]
 
 
 if __name__ == '__main__':

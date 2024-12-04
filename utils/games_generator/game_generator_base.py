@@ -1,6 +1,7 @@
-import pygame
 import json
 import os
+
+import pygame
 
 from utils.colors import Color
 
@@ -8,11 +9,12 @@ from utils.colors import Color
 class GameGeneratorBase:
     DIR = r"C:\ws\pygame_projects\utils\games_data"
     control_height = 100
+
     def __init__(self, game_name: str):
         self.game_name = game_name
 
         self.screen = None
-        self.screen_size = self.width , self.height = 400, 600
+        self.screen_size = self.width, self.height = 400, 600
         self.screen_color: tuple[int, int, int, int] = Color.GRAY.value
 
         self.clock_fps = 60
@@ -20,8 +22,6 @@ class GameGeneratorBase:
         self.space_gravity = 0, 0
         self.space_step = 60.0
         self.data = dict()
-
-
 
     def generate(self):
         ans = input("Starting generate game. If You want the default game parameters tab - D: ")

@@ -1,7 +1,6 @@
-import time
-from abc import ABC
-import os
 import json
+import os
+from abc import ABC
 from typing import Callable
 
 import pygame
@@ -21,7 +20,8 @@ class GameBase(ABC):
     def __init__(self, name: str, n: int = -1, recording: bool = True, upload: bool = True):
         self._name = name
         snake_name = self._name.lower().replace(' ', '_')
-        self._n = n if n != -1 else len([file for file in os.listdir(self.GAME_DATA_DIR) if file.startswith(snake_name)]) - 1
+        self._n = n if n != -1 else len(
+            [file for file in os.listdir(self.GAME_DATA_DIR) if file.startswith(snake_name)]) - 1
         file = f"{snake_name}_data_{self._n}.json"
         with open(os.path.join(self.GAME_DATA_DIR, file), "r") as f:
             self._game_data = json.load(f)
@@ -49,9 +49,8 @@ class GameBase(ABC):
         self._logo_position = self._game_data[self.LOGO_STR][self.POSITION_STR]
         self._running = True
         self._recorder = GameRecorder(self._name, self._n) if recording else None
-        self._uploader = ReelUploader(self._name, self._n, players_color=self._get_players_color()) if recording and upload else None
-
-
+        self._uploader = ReelUploader(self._name, self._n,
+                                      players_color=self._get_players_color()) if recording and upload else None
 
     def run(self):
         self._screen.fill(self._screen_color)  # Clear the screen
@@ -79,9 +78,7 @@ class GameBase(ABC):
 
         # Quit the game
         if self._recorder: self._recorder.stop()
-        # time.sleep(5)
         if self._uploader:
-            time.sleep(30)
             self._uploader.upload()
         pygame.quit()
 

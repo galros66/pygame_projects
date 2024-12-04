@@ -1,5 +1,7 @@
-import  pymunk
+import pymunk
+
 from elements.element import Element
+
 
 class BoundaryLine(Element):
     _default_values = {
@@ -7,6 +9,7 @@ class BoundaryLine(Element):
         "body_type": pymunk.Body.STATIC,
         "radius": 1
     }
+
     def __init__(
             self,
             a: tuple[float, float] = (0, 0),
@@ -19,4 +22,3 @@ class BoundaryLine(Element):
             group=group,
             **self._default_values
         )
-

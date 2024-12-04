@@ -1,12 +1,13 @@
 from utils.colors import Color
+
 _EMOJI_RANGES = [
     (0x1F600, 0x1F64F),  # Emoticons
     (0x1F300, 0x1F5FF),  # Symbols & Pictographs
     (0x1F680, 0x1F6FF),  # Transport & Map
     (0x1F900, 0x1F9FF),  # Supplemental Symbols & Pictographs
     (0x1F1E6, 0x1F1FF),  # Flags
-    (0x2600, 0x26FF),    # Miscellaneous Symbols
-    (0x2700, 0x27BF),    # Dingbats
+    (0x2600, 0x26FF),  # Miscellaneous Symbols
+    (0x2700, 0x27BF),  # Dingbats
     (0x1FA70, 0x1FAFF),  # Extended Pictographs
 ]
 

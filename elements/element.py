@@ -4,6 +4,8 @@ import pymunk
 from pymunk import Transform
 
 VEC2 = Union[tuple[float, float], list[float, float]]
+
+
 class Element:
     items = []
 
@@ -52,4 +54,3 @@ class Element:
         self.shape.filter = pymunk.ShapeFilter(group=group)
 
         self.items += [self.body, self.shape]
-

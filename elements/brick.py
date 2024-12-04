@@ -1,4 +1,5 @@
-import  pymunk
+import pymunk
+
 from elements.element import Element
 
 
@@ -8,6 +9,7 @@ class Brick(Element):
         "moment": float('inf'),
         "body_type": pymunk.Body.DYNAMIC,
     }
+
     def __init__(
             self,
             position: tuple[float, float] = (0, 0),
@@ -25,4 +27,3 @@ class Brick(Element):
             collision_type=group,
             **self._default_values
         )
-

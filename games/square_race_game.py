@@ -6,12 +6,15 @@ from elements.victory_line import VictoryLine
 from games.game_base import GameBase
 from utils.sounds import Sound
 
+
 class SquareRaceGame(GameBase):
     GAME_NAME = "Square Race Game"
     VICTORY_LINE_STR, BOUNDARIES_STR, BOUNDARIES_LINES_STR, BRICKS_STR = "victory_line", "boundaries", "boundaries_lines", "bricks"
-    def __init__(self, n: int = -1, recording: bool =True, upload: bool = True):
+
+    def __init__(self, n: int = -1, recording: bool = True, upload: bool = True):
         super().__init__(self.GAME_NAME, n, recording, upload)
-        self._victory_line = VictoryLine(**self._game_data[self.VICTORY_LINE_STR])
+        self._victory_line = [VictoryLine(**victory_line_data) for victory_line_data in
+                              self._game_data[self.VICTORY_LINE_STR]]
         self._boundaries = [Boundary(**boundary_data) for boundary_data in self._game_data[self.BOUNDARIES_STR]]
         self._boundaries_lines = [BoundaryLine(**boundary_line_data) for boundary_line_data in
                                   self._game_data[self.BOUNDARIES_LINES_STR]]
@@ -33,14 +36,15 @@ class SquareRaceGame(GameBase):
         def victory_line_collision_handler(arbiter, space, data):
             Sound.WIN.value.play()
             for body in space.bodies:
-               vx, vy = body.velocity
-               body.velocity = int(vx / 40.0), int(vy / 40.0)
+                vx, vy = body.velocity
+                body.velocity = int(vx / 40.0), int(vy / 40.0)
             return False
 
         for brick in self._bricks:
-            handler = self._space.add_collision_handler(self._victory_line.shape.collision_type,
-                                                        brick.shape.collision_type)
-            handler.begin = victory_line_collision_handler
+            for victory_line_element in self._victory_line:
+                handler = self._space.add_collision_handler(victory_line_element.shape.collision_type,
+                                                            brick.shape.collision_type)
+                handler.begin = victory_line_collision_handler
 
     def _add_brick_collision_handler(self):
 
@@ -49,14 +53,14 @@ class SquareRaceGame(GameBase):
             return True
 
         for brick in self._bricks:
-            for shape in self._space.shapes:
-                if shape.collision_type == brick.shape.collision_type or shape.collision_type == self._victory_line.shape.collision_type: continue
-                handler = self._space.add_collision_handler(brick.shape.collision_type, shape.collision_type)
-                handler.begin = brick_collision_handler
-
+            for victory_line_element in self._victory_line:
+                for shape in self._space.shapes:
+                    if shape.collision_type == brick.shape.collision_type or shape.collision_type == victory_line_element.shape.collision_type: continue
+                    handler = self._space.add_collision_handler(brick.shape.collision_type, shape.collision_type)
+                    handler.begin = brick_collision_handler
 
 
 if __name__ == '__main__':
-    num = 10
-    game = SquareRaceGame(n = num, recording=True, upload=True)
+    num = 13
+    game = SquareRaceGame(n=num, recording=True, upload=False)
     game.run()

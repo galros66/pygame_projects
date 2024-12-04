@@ -1,7 +1,7 @@
+import os
 from pathlib import Path
 
 from instagrapi import Client
-import  os
 
 from utils.colors import Color
 from utils.media_uploaders.emojis import color_emoji_mapping
@@ -31,7 +31,8 @@ class ReelUploader:
         self._colors = players_color
 
     def upload(self):
-        video_file = max([file for file in os.listdir(VIDEO_DIR) if file.startswith(self.file_prefix) and file.endswith("mp4")])
+        video_file = max(
+            [file for file in os.listdir(VIDEO_DIR) if file.startswith(self.file_prefix) and file.endswith("mp4")])
         media = self.client.clip_upload(
             Path(fr"{VIDEO_DIR}\\{video_file}"),
             self._get_caption()
@@ -42,9 +43,11 @@ class ReelUploader:
         texts = [self._title]
         if self._text: texts.append(self._text)
         if self._colors:
-            texts[0] += "\n" + "🆚".join([emoji for color, emoji in color_emoji_mapping.items() if list(color.value) in self._colors])
+            texts[0] += "\n" + "🆚".join(
+                [emoji for color, emoji in color_emoji_mapping.items() if list(color.value) in self._colors])
         texts.append(self._hash_tags)
         return "\n".join(texts)
+
 
 if __name__ == '__main__':
     uploader = ReelUploader("Square Race", players_color=[Color.PINK.value, Color.YELLOW.value])
