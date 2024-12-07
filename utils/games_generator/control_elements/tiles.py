@@ -6,7 +6,12 @@ from utils.colors import Color
 from utils.games_generator.control_elements.button import Button
 
 
-class TileButton(Button):
+class TilesButton(Button):
+    """
+    TilesButton is responsible for creating and managing a grid of tiles on a button interface.
+    It keeps track of both the boundaries and the areas of the individual tiles within the defined region.
+    """
+
     def __init__(
             self,
             screen: Any,
@@ -16,6 +21,16 @@ class TileButton(Button):
             tile_color: Color = Color.GRAY,
             border_color: Color = Color.BLUE
     ):
+        """
+        Initialize a TilesButton.
+
+        :param screen (Any): The Pygame screen or rendering surface on which this button will be drawn.
+        :param top_left (tuple[float, float]): The top-left corner coordinates of the area this button covers.
+        :param size (tuple[float, float]): The width and height (dimensions) of the entire tiles grid region.
+        :param step (int): The size of each individual tile (distance between each tile's boundaries). Default is 50.
+        :param tile_color (Color): The default color of each tile in the grid. Default is gray.
+        :param border_color (Color): The color used for tile borders. Default is blue.
+        """
         super().__init__(screen=screen, top_left=top_left, size=size)
         self.tile_color = tile_color
         self.border_color = border_color
@@ -55,6 +70,15 @@ class TileButton(Button):
                 tile.color = self.tile_color
 
     def set_value(self, mouse_position: tuple[float, float] = None, value: Any = None):
+        """
+        Updates the tile boundaries or grid properties based on mouse interaction or specified value.
+
+        If the mouse_position is provided and is within the clickable area, the tile boundaries are updated accordingly.
+        Alternatively.
+
+        :param mouse_position: The current mouse cursor position for interactive adjustments.
+        :param value: A specific value used to redefine or adjust the tile boundaries.
+        """
         for tile in self.tiles:
             if tile.click(mouse_position):
                 if tile in self.border:
