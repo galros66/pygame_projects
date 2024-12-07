@@ -12,6 +12,23 @@ class SquareRaceGame(GameBase):
     VICTORY_LINE_STR, BOUNDARIES_STR, BOUNDARIES_LINES_STR, BRICKS_STR = "victory_line", "boundaries", "boundaries_lines", "bricks"
 
     def __init__(self, n: int = -1, recording: bool = True, upload: bool = True):
+        """
+        Initialize a SquareRaceGame instance.
+
+        SquareRaceGame is a fast-paced racing game where players navigate
+        through a square-based track, competing to reach the finish line
+        while avoiding obstacles. The game supports recording gameplay
+        and uploading recordings to social media platforms.
+
+        Args:
+            :param n (int, optional):
+                Game number. Defaults to -1, which loads the last saved game with the same name from the
+                `games_data` folder.
+            :param recording (bool, optional):
+                Whether to enable game recording. Defaults to True.
+            :param upload (bool, optional):
+                Whether to enable automatic upload to social media after the game ends. Defaults to True.
+        """
         super().__init__(self.GAME_NAME, n, recording, upload)
         self._victory_line = [VictoryLine(**victory_line_data) for victory_line_data in
                               self._game_data[self.VICTORY_LINE_STR]]
@@ -61,6 +78,6 @@ class SquareRaceGame(GameBase):
 
 
 if __name__ == '__main__':
-    num = 13
-    game = SquareRaceGame(n=num, recording=True, upload=False)
+    num = -1
+    game = SquareRaceGame(n=num, recording=False, upload=False)
     game.run()

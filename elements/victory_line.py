@@ -8,9 +8,6 @@ class VictoryLine(Element):
 
     def __init__(
             self,
-            # a: tuple[float, float] = (0, 0),
-            # b: tuple[float, float] = (0, 0),
-            # radius: float = 5,
             position: tuple[float, float] = (0, 0),
             size: tuple[float, float] = (10, 10),
             color: tuple[int, int, int, int] = Color.BLACK.value,

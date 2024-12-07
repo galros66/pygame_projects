@@ -3,15 +3,15 @@ import random
 import pygame
 
 from utils.colors import Color
+from utils.games_generator.control_elements.button import Button
+from utils.games_generator.control_elements.color_button import ColorButton
+from utils.games_generator.control_elements.control_element import ControlElement
+from utils.games_generator.control_elements.select_point_button import SelectPointButton
+from utils.games_generator.control_elements.tiles import TileButton
 from utils.games_generator.game_generator_base import GameGeneratorBase
 
 
 class SquareRaceGameGenerator(GameGeneratorBase):
-    MODE_BORDER = "border"
-    MODE_START = "start"
-    MODE_END = "end"
-    MODE_LOGO = "logo"
-
     BOUNDARIES_ELEMENTS = "boundaries"
     BOUNDARIES_LINES_ELEMENTS = "boundaries_lines"
     VICTORY_LINE_ELEMENTS = "victory_line"
@@ -30,170 +30,61 @@ class SquareRaceGameGenerator(GameGeneratorBase):
 
     def __init__(self, game_name: str = "Square Race"):
         super().__init__(game_name)
-        self.boundaries = []
-        self.boundaries_lines = []
-        self.start_victory_line, self.end_victory_line = None, None
-        self.start_position = None
-        self.logo_position = None
 
-    def generate(self):
-        super().generate()
-        # Grid of tiles
-        tile_size = 50
-        tiles = [
-            [pygame.Rect(x, y, tile_size, tile_size)
-             for x in range(0, self.width, tile_size)]
-            for y in range(0, self.height, tile_size)
+    def _draw(self):
+        super()._draw()
+        bricks_position_button = ControlElement.control_elements["bricks position"]
+        victory_line_a_button = ControlElement.control_elements["victory_line a"]
+        victory_line_b_button = ControlElement.control_elements["victory_line b"]
+
+        # Draw start point
+        if bricks_position_button.value is not None:
+            pygame.draw.circle(self.screen, Color.GREEN.value, bricks_position_button.value,
+                               5)  # Draws a small green circle
+
+        # Draw end line
+        if victory_line_a_button.value and victory_line_b_button.value:
+            pygame.draw.line(self.screen, Color.RED.value, victory_line_a_button.value, victory_line_b_button.value, 4)
+
+    def _get_control_elements(self) -> list[Button]:
+        x, y = self._control_x, self._control_y
+        w, h = self._control_w, self._control_h
+        self._control_idx += 4
+        return [
+            *super()._get_control_elements(),
+            ControlElement(self.screen, "bricks number", (x, y + self._control_idx * h), (w, h), value=2,
+                           value_range=(2, 5), step=1),
+            ControlElement(self.screen, "bricks colors", (x, y + (1 + self._control_idx) * h), (w, h), n_colors=2),
+            ControlElement(self.screen, "bricks position", (x, y + (2 + self._control_idx) * h), (w, h),
+                           area_top_left=(0, 0), area_size=(self.width, self.height)),
+            ControlElement(self.screen, "boundaries color", (x, y + (3 + self._control_idx) * h), (w, h), n_colors=1,
+                           color=Color.BLUE),
+            ControlElement(self.screen, "victory_line a", (x, y + (4 + self._control_idx) * h), (w, h),
+                           area_top_left=(0, 0), area_size=(self.width, self.height)),
+            ControlElement(self.screen, "victory_line b", (x, y + (5 + self._control_idx) * h), (w, h),
+                           area_top_left=(0, 0), area_size=(self.width, self.height)),
         ]
 
-        # Game objects
-        borders = []  # List of border tiles
-        borders_lines = [
-            [(0, 0), (self.width, 0)],
-            [(0, 0), (0, self.height)],
-            [(self.width, 0), (self.width, self.height)],
-            [(0, self.height), (self.width, self.height)]
-        ]
+    def _get_buttons(self) -> dict[str, Button]:
+        return dict(
+            **super()._get_buttons(),
+            **{"tiles": TileButton(self.screen, (0, 0), (self.width, self.height))}
+        )
 
-        modes = [self.MODE_LOGO, self.MODE_END, self.MODE_START, self.MODE_BORDER]
-        mode = modes.pop()
-        # Buttons
-        button = pygame.Rect(self.width // 2 - 75, self.height + 20, 150, 50)
+    def _add_data(self):
+        super()._add_data()
+        self._add_boundaries_data()
+        self._add_bricks_data()
+        self._add_victory_line_data()
 
-        # Main loop
-        running = True
-        while running:
-            self.screen.fill(Color.WHITE.value)
-            # Draw grid
-            for row in tiles:
-                for tile in row:
-                    color = Color.GRAY.value if tile not in borders else Color.BLUE.value
-                    pygame.draw.rect(self.screen, color, tile, 0)
-                    pygame.draw.rect(self.screen, Color.WHITE.value, tile, 1)
-
-            # Draw start point
-            if self.start_position:
-                pygame.draw.circle(self.screen, Color.GREEN.value, self.start_position, 5)  # Draws a small green circle
-
-            # Draw end line
-            if self.end_victory_line and self.start_victory_line:
-                pygame.draw.line(self.screen, Color.RED.value, self.start_victory_line, self.end_victory_line, 4)
-
-            for line in borders_lines:
-                pygame.draw.line(self.screen, Color.BLACK.value, line[0], line[1], 4)
-
-            self._draw_logo()
-            # Draw control panel
-            pygame.draw.rect(self.screen, Color.WHITE.value, (0, self.height, self.width, self.control_height))
-            pygame.draw.line(self.screen, Color.BLACK.value, (0, self.height), (self.width, self.height),
-                             2)
-            self._draw_button(button, mode)
-
-            # Handle events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_pos = pygame.mouse.get_pos()
-
-                    # Check if a button is clicked
-                    if button.collidepoint(mouse_pos):
-                        if mode == self.MODE_BORDER:
-                            self._add_borders_lines(borders_lines, tiles, borders)
-                            self._add_boundaries_data(borders, borders_lines)
-                            mode = modes.pop()
-                        elif mode == self.MODE_START:
-                            if self.start_position:
-                                self._add_bricks_data()
-                                mode = modes.pop()
-                        elif mode == self.MODE_END:
-                            if self.end_victory_line and self.start_victory_line:
-                                self._add_victory_line_data()
-                                mode = modes.pop()
-                        elif mode == self.MODE_LOGO:
-                            self.data["logo"] = {'position': self.logo_position}
-                            running = False
-
-                    # Handle tile selection based on mode
-                    if mouse_pos[1] < self.height:
-                        if mode == self.MODE_BORDER:
-                            for row in tiles:
-                                for tile in row:
-                                    if tile.collidepoint(mouse_pos):
-                                        if tile in borders:
-                                            borders.remove(tile)
-                                        else:
-                                            borders.append(tile)
-
-                        elif mode == self.MODE_START:
-                            self.start_position = mouse_pos
-
-                        elif mode == self.MODE_END:
-                            if not self.start_victory_line:
-                                self.start_victory_line = mouse_pos
-                            else:
-                                if self.end_victory_line: self.start_victory_line = self.end_victory_line
-                                a0, b0 = self.start_victory_line
-                                self.end_victory_line = (a0, mouse_pos[1]) if abs(a0 - mouse_pos[0]) < abs(
-                                    b0 - mouse_pos[1]) \
-                                    else (mouse_pos[0], b0)
-
-                        elif mode == self.MODE_LOGO:
-                            self.logo_position = mouse_pos
-
-            # Update display
-            pygame.display.flip()
-
-        self._save_data()
-        # Quit pygame
-        pygame.quit()
-
-    def _draw_button(self, button: pygame.Rect, mode: str):
-        """Draws the buttons in the control panel."""
-        # Font
-        font = pygame.font.SysFont("Arial Nova", 20)
-
-        pygame.draw.rect(self.screen, Color.GRAY.value, button)
-        pygame.draw.rect(self.screen, Color.BLACK.value, button, 2)
-        text = font.render(mode.capitalize(), True, Color.BLACK.value)
-        text_rect = text.get_rect(center=button.center)
-        self.screen.blit(text, text_rect)
-
-    def _draw_logo(self):
-        if self.logo_position:
-            font = pygame.font.SysFont("Agency FB", 20)
-            text = font.render("@ grr.sim.games", True, Color.BLACK.value)
-            text_rect = text.get_rect(center=self.logo_position)
-            self.screen.blit(text, text_rect)
-
-    @classmethod
-    def _add_borders_lines(cls, borders_lines: list[list], tiles: list[list[pygame.Rect]], borders: list[pygame.Rect]):
-        for i in range(len(tiles)):
-            for j in range(len(tiles[i])):
-                if tiles[i][j] in borders:
-                    border = tiles[i][j]
-                    if j + 1 < len(tiles[i]) and tiles[i][j + 1] not in borders:
-                        borders_lines.append([(border.x + border.size[0], border.y),
-                                              (border.x + border.size[0], border.y + border.size[1])])
-                    if j > 0 and tiles[i][j - 1] not in borders:
-                        borders_lines.append([(border.x, border.y), (border.x, border.y + border.size[1])])
-                    if i + 1 < len(tiles) and tiles[i + 1][j] not in borders:
-                        borders_lines.append([(border.x, border.y + border.size[1]),
-                                              (border.x + border.size[0], border.y + border.size[1])])
-                    if i > 0 and tiles[i - 1][j] not in borders:
-                        borders_lines.append([(border.x, border.y), (border.x + border.size[0], border.y)])
-
-    def _add_boundaries_data(self, borders: list[pygame.Rect], borders_lines: list[list]):
-        for c in Color.get_all(): print(c)
-        try:
-            color = getattr(Color, input("Choose color: ").upper()).value
-        except:
-            print("Color name not found the color chosen randomly.")
-            color = random.choice(Color.get_all()).value
+    def _add_boundaries_data(self):
+        color = ControlElement.control_elements["boundaries color"].get_value().value
+        borders = self._buttons["tiles"].border
+        borders_lines = self._buttons["tiles"].border_lines
         self.data[self.BOUNDARIES_ELEMENTS] = [
             {
-                "position": (border.x + border.size[0] / 2, border.y + border.size[1] / 2),
-                "size": border.size,
+                "position": (border.rect.x + border.rect.size[0] / 2, border.rect.y + border.rect.size[1] / 2),
+                "size": border.rect.size,
                 "group": self.GROUPS[self.BOUNDARIES_ELEMENTS],
                 "color": color
             } for border in borders
@@ -215,43 +106,75 @@ class SquareRaceGameGenerator(GameGeneratorBase):
         return vx * norm, vy * norm
 
     def _add_bricks_data(self):
-        try:
-            n_bricks = int(input("Please write the number of the playing bricks: "))
-        except:
-            n_bricks = 2
-        colors = []
-        for i in range(n_bricks):
-            for c in Color.get_basic_colors(): print(c)
-            try:
-                colors.append(getattr(Color, input(f"Please Choose color for brick number {i + 1}").upper()).value)
-            except:
-                print("Color name not found the color chosen randomly.")
-                colors.append(random.choice(Color.get_basic_colors()).value)
+        bricks_colors_buttons = ControlElement.control_elements["bricks colors"].colors_buttons
+        start_position = ControlElement.control_elements["bricks position"].value
+        colors = [button.color.value for button in bricks_colors_buttons]
         self.data[self.BRICKS_ELEMENTS] = [
             {
-                "position": self.start_position,
+                "position": start_position,
                 "size": self.SIZES[self.BRICKS_ELEMENTS],
                 "velocity": self._get_random_velocity(),
                 "group": self.GROUPS[self.BRICKS_ELEMENTS] + i,
                 "color": colors[i]
-            } for i in range(n_bricks)
+            } for i in range(len(colors))
         ]
 
     def _add_victory_line_data(self):
-        dx, dy = abs(self.start_victory_line[0] - self.end_victory_line[0]), abs(
-            self.start_victory_line[1] - self.end_victory_line[1])
-        a, b = min(self.start_victory_line[0], self.end_victory_line[0]), min(self.start_victory_line[1],
-                                                                              self.end_victory_line[1])
-        x_pos, y_pos = ([a - 3, a + 3], [b + y for y in range(0, dy, 6)]) if dx == 0 else (
-            [a + x for x in range(0, dx, 6)], [b - 3, b + 3])
+        victory_line_a = ControlElement.control_elements["victory_line a"].value
+        victory_line_b = ControlElement.control_elements["victory_line b"].value
+        dx, dy = abs(victory_line_a[0] - victory_line_b[0]), abs(victory_line_a[1] - victory_line_b[1])
+        a, b = min(victory_line_a[0], victory_line_b[0]), min(victory_line_a[1], victory_line_b[1])
+        box_size = 6
+        x_pos, y_pos = (
+        [a - box_size // 2, a + box_size // 2], [b + y for y in range(0, dy, box_size)]) if dx == 0 else (
+            [a + x for x in range(0, dx, box_size)], [b - box_size // 2, b + box_size // 2])
 
         self.data[self.VICTORY_LINE_ELEMENTS] = [{
             "position": (x, y),
-            "size": (6, 6),
+            "size": (box_size, box_size),
             "color": Color.BLACK.value if (x_pos.index(x) + y_pos.index(y)) % 2 == 0 else Color.WHITE.value,
             "group": self.GROUPS[self.VICTORY_LINE_ELEMENTS]
 
         } for x in x_pos for y in y_pos]
+
+    def _mouse_button_down_handler(self, mouse_position: tuple[float, float]):
+        color_range_button = self._buttons["color range"]
+        tiles_button = self._buttons["tiles"]
+        done_button = self._buttons["done"]
+        screen_color_button = ControlElement.control_elements["screen color"]
+        boundaries_color_button = ControlElement.control_elements["boundaries color"]
+        bricks_number_button = ControlElement.control_elements["bricks number"]
+        bricks_colors_button = ControlElement.control_elements["bricks colors"]
+        victory_line_a_button = ControlElement.control_elements["victory_line a"]
+        victory_line_b_button = ControlElement.control_elements["victory_line b"]
+
+        if not SelectPointButton.is_select_mode(): tiles_button.set_value(mouse_position)
+
+        SelectPointButton.set_waiting(mouse_position)
+        for b in ControlElement.control_elements.values():
+            if b != bricks_number_button: b.set_value(mouse_position)
+
+        if color_range_button.click(mouse_position):
+            ColorButton.set_waiting(color_range_button.get_value(mouse_position))
+            tiles_button.reset_color(screen_color_button.get_value(), boundaries_color_button.get_value())
+
+        if bricks_number_button.click(mouse_position):
+            bricks_number_button.set_value(mouse_position)
+            bricks_colors_button.reset_n_colors(bricks_number_button.value)
+
+        if victory_line_a_button.value and victory_line_b_button.value:
+            dx = abs(victory_line_a_button.value[0] - victory_line_b_button.value[0])
+            dy = abs(victory_line_a_button.value[1] - victory_line_b_button.value[1])
+            if dx != 0 and dx < dy:
+                victory_line_b_button.set_value(value=(victory_line_a_button.value[0], victory_line_b_button.value[1]))
+            elif dy != 0 and dy < dx:
+                victory_line_b_button.set_value(value=(victory_line_b_button.value[0], victory_line_a_button.value[1]))
+
+        if done_button.click(mouse_position):
+            if all([
+                button.value is not None
+                for button in ControlElement.control_elements.values() if isinstance(button, SelectPointButton)
+            ]): self._running = False
 
 
 if __name__ == '__main__':

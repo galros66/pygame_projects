@@ -31,6 +31,15 @@ class Element:
             color: tuple[int, int, int, int] = (0, 0, 0, 0),
             group: int = 0,
     ):
+        """
+        Initialize an Element representing a pymunk shape and body.
+
+        Parameters:
+            Accepts standard parameters for defining pymunk shapes and bodies, including
+            properties like mass, moment, position, velocity, collision settings, shape geometry,
+            friction, elasticity, and sensor properties.
+        """
+
         self.body = pymunk.Body(mass=mass, moment=moment, body_type=body_type)
         self.body.position = position
         self.body.velocity = velocity
